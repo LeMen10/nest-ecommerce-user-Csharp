@@ -12,7 +12,7 @@ const cx = className.bind(styles);
 
 function Cart({ setHeaderVariable }) {
     const navigate = useNavigate();
-    const [listCart, setListCart] = useState([]);
+    const [cart, setCarts] = useState([]);
     const [checkedItems, setCheckedItems] = useState([]);
     const [priceTotal, setPriceTotal] = useState();
 
@@ -54,7 +54,7 @@ function Cart({ setHeaderVariable }) {
         }
     };
 
-    const handleChangeQuantity = (quantityValue, targetId, priceTotalValue) => {
+    const handleChangeQuantity = (quantityValue, targetId) => {
         const token = Cookies.get('token');
         const api = axios.create({
             headers: {
@@ -63,12 +63,15 @@ function Cart({ setHeaderVariable }) {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/update-quantity`, { quantityValue, targetId, priceTotalValue })
-            .then(function (res) {
-                setPriceTotal(res.data.price_total);
-                setListCart(res.data.cart);
+        api.post(`${process.env.REACT_APP_BASE_URL}/Cart/update-quantity`, {
+            quantity: quantityValue,
+            cartId: Number(targetId),
+        })
+            .then((res) => {
+                setCarts(res.data.result);
+                handleQuantity(res.data.result);
             })
-            .catch(function (error) {
+            .catch((error) => {
                 const err = error.response.data.message;
                 if (err === 'Invalid access token') navigate('/login');
             });
@@ -83,20 +86,19 @@ function Cart({ setHeaderVariable }) {
             },
         });
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/cart`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Cart/get-cart`)
             .then((res) => {
-                setListCart(res.data.cart);
-                setPriceTotal(res.data.price_total);
+                setCarts(res.data.result);
+                handleQuantity(res.data.result);
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                if (error.response.status === 401) navigate('/login');
             });
     }, [navigate]);
 
     const deleteProductItem = (event) => {
         const token = Cookies.get('token');
-        const dataId = event.target.dataset.id;
+        const dataId = Number(event.target.dataset.id);
         const api = axios.create({
             headers: {
                 'Content-Type': 'application/json',
@@ -104,19 +106,22 @@ function Cart({ setHeaderVariable }) {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/delete/${dataId}`)
+        api.delete(`${process.env.REACT_APP_BASE_URL}/Cart/delete-cart-item/${dataId}`)
             .then((res) => {
-                if (res.status === 200) {
-                    const count = res.data.count;
-                    if (setHeaderVariable) setHeaderVariable(count);
-                    setListCart(res.data.cart);
-                    setPriceTotal(res.data.price_total);
-                }
+                const count = res.data.count;
+                if (setHeaderVariable) setHeaderVariable(count);
+                setCarts(res.data.carts);
+                handleQuantity(res.data.carts);
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                if (error.response.status === 401) navigate('/login');
             });
+    };
+
+    const handleQuantity = (carts) => {
+        var total = 0;
+        carts.map((item) => (total += item.price * item.quantity));
+        setPriceTotal(total);
     };
 
     const handleChange = (event) => {
@@ -129,8 +134,8 @@ function Cart({ setHeaderVariable }) {
         const arrItemChecked = document.querySelectorAll(`[name="checkProductItem"]`);
         if (event.target.checked) {
             const newListCart = [];
-            listCart.forEach((item) => {
-                newListCart.push(item.product_id);
+            cart.forEach((item) => {
+                newListCart.push(item.cartId);
             });
             arrItemChecked.forEach((item) => (item.checked = true));
             setCheckedItems(newListCart);
@@ -141,7 +146,7 @@ function Cart({ setHeaderVariable }) {
     };
 
     const handleBuy = () => {
-        const data = checkedItems;
+        const data = checkedItems.map((item) => parseInt(item));
         navigate('/checkout', { state: { data } });
     };
 
@@ -163,9 +168,7 @@ function Cart({ setHeaderVariable }) {
                                         onChange={handleCheckAll}
                                         className={cx('form-check-input')}
                                         id="checkbox-all"
-                                        checked={
-                                            listCart && listCart.length > 0 && checkedItems.length === listCart.length
-                                        }
+                                        checked={cart && cart.length > 0 && checkedItems.length === cart.length}
                                     />
                                 </div>
                             </td>
@@ -185,35 +188,35 @@ function Cart({ setHeaderVariable }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {listCart.length > 0 ? (
-                            listCart.map((result) => (
-                                <tr key={result._id}>
+                        {cart.length > 0 ? (
+                            cart.map((result) => (
+                                <tr key={result.cartId}>
                                     <td>
                                         <div className={cx('form-check')}>
                                             <input
                                                 type="checkbox"
                                                 className={cx('form-check-input', 'check-input-product')}
-                                                value={result.product_id}
+                                                value={result.cartId}
                                                 name="checkProductItem"
                                                 onChange={handleChange}
                                             />
                                         </div>
                                     </td>
                                     <td>
-                                        <Image style={{ width: '120px' }} src={result.img} alt="" />
+                                        <Image style={{ width: '120px' }} src={result.image} alt="" />
                                         <p>{result.title}</p>
                                     </td>
                                     <td
                                         style={{ textAlign: 'center' }}
-                                        data-price={result._id}
+                                        data-price={result.cartId}
                                         className={cx('unit-price')}
                                     >
-                                        {result.price_unit}$
+                                        {result.price}$
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
                                         <span
                                             className={cx('change-quantity-product')}
-                                            data-target={result._id}
+                                            data-target={result.cartId}
                                             onClick={decreaseProduct}
                                         >
                                             -
@@ -224,12 +227,12 @@ function Cart({ setHeaderVariable }) {
                                             onChange={() => {}}
                                             value={result.quantity}
                                             name="quantity"
-                                            data-id={result._id}
-                                            data-product_id={result.product_id}
+                                            data-id={result.cartId}
+                                            data-product_id={result.productId}
                                         />
                                         <span
                                             className={cx('change-quantity-product')}
-                                            data-target={result._id}
+                                            data-target={result.cartId}
                                             onClick={increaseProduct}
                                         >
                                             +
@@ -238,15 +241,15 @@ function Cart({ setHeaderVariable }) {
                                     <td
                                         style={{ textAlign: 'center' }}
                                         className={cx('product-total')}
-                                        data-total={result._id}
+                                        data-total={result.cartId}
                                     >
-                                        {result.price_total}$
+                                        {result.price * result.quantity}$
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
                                         <div
                                             onClick={deleteProductItem}
                                             className={cx('btn', 'btn-link', 'text-dark')}
-                                            data-id={result._id}
+                                            data-id={result.cartId}
                                         >
                                             Xóa
                                         </div>
@@ -263,7 +266,7 @@ function Cart({ setHeaderVariable }) {
                         )}
                     </tbody>
                 </table>
-                {listCart.length > 0 ? (
+                {cart.length > 0 ? (
                     <div className={cx('bill-product')}>
                         <div className={cx('total-payment')}>
                             Tổng thanh toán: <span className={cx('price-total-order')}>{priceTotal}$</span>

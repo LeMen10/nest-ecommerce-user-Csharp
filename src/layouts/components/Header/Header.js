@@ -1,5 +1,5 @@
 import React from 'react';
-// import axios from 'axios';
+import axios from 'axios';
 import images from '~/assets/images/images';
 import Search from '~/layouts/components/Search/Search';
 import className from 'classnames/bind';
@@ -12,11 +12,10 @@ import { Link, useNavigate } from 'react-router-dom';
 const cx = className.bind(styles);
 
 function Header({ variable }) {
-    console.log(variable)
     const navigate = useNavigate();
     const [boxShadowHeader, setBoxShadowHeader] = useState('');
     const [username, setUsername] = useState();
-    // const [countItemsCart, setCountItemsCart] = useState();
+    const [countItemsCart, setCountItemsCart] = useState();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -30,43 +29,37 @@ function Header({ variable }) {
     }, []);
 
     useEffect(() => {
-        // const token = Cookies.get('token');
-        // const api = axios.create({
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        // });
+        const token = Cookies.get('token');
+        const api = axios.create({
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-        // api.get(`${process.env.REACT_APP_BASE_URL}/get-username`)
-        //     .then((res) => {
-        //         setUsername(res.data.username);
-        //     })
-        //     .catch((error) => {
-        //         const err = error.response.data.message;
-        //         if (err === 'User not found') navigate('/login');
-        //     });
+        api.get(`${process.env.REACT_APP_BASE_URL}/Account/get-username`)
+            .then((res) => {
+                setUsername(res.data.username);
+            })
+            .catch((error) => {});
     }, [navigate]);
 
     useEffect(() => {
-        // const token = Cookies.get('token');
-        // if (token) {
-        //     const api = axios.create({
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //             Authorization: `Bearer ${token}`,
-        //         },
-        //     });
+        const token = Cookies.get('token');
+        if (token) {
+            const api = axios.create({
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-        //     api.get(`${process.env.REACT_APP_BASE_URL}/number-items-cart`)
-        //         .then((res) => {
-                    
-        //             setCountItemsCart(res.data.count);
-        //         })
-        //         .catch((error) => {
-                    
-        //         });
-        // }
+            api.get(`${process.env.REACT_APP_BASE_URL}/Account/get-items-cart`)
+                .then((res) => {
+                    setCountItemsCart(res.data.result);
+                })
+                .catch((error) => {});
+        }
     }, [variable]);
 
     const handleLogout = () => {
@@ -114,7 +107,7 @@ function Header({ variable }) {
                         </Link>
                         <Link to={'/cart'} className={cx('icon-cart')}>
                             <CartIcon />
-                            {/* <span className={cx('count-product-cart')}>{countItemsCart || 0}</span> */}
+                            <span className={cx('count-product-cart')}>{countItemsCart || 0}</span>
                         </Link>
                         {username ? (
                             <div className={cx('header-action-logged')}>
@@ -128,7 +121,7 @@ function Header({ variable }) {
                                                 className={cx('logged-dropdown-item-content')}
                                             >
                                                 <i className={cx('fa-solid', 'fa-cart-shopping')}></i>
-                                                <p>Purchase</p>
+                                                <p>Đơn mua</p>
                                             </Link>
                                         </li>
                                         <li className={cx('logged-dropdown-item')}>
@@ -136,7 +129,7 @@ function Header({ variable }) {
                                                 <i
                                                     className={cx('fa-solid', 'fa-right-from-bracket', 'icon-logout')}
                                                 ></i>
-                                                <p className={cx('js-log-out')}>Log Out</p>
+                                                <p className={cx('js-log-out')}>Đăng xuất</p>
                                             </div>
                                         </li>
                                     </ul>

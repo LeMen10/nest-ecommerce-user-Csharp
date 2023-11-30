@@ -27,7 +27,8 @@ function Shop() {
 
     const query_String = window.location.search;
     const urlParam = new URLSearchParams(query_String);
-    const category = urlParam.get('_cate');
+    const category = urlParam.get('cate');
+    
     useEffect(() => {
         const token = Cookies.get('token');
         const api = axios.create({
@@ -37,21 +38,25 @@ function Shop() {
             },
         });
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/shop?_page=1&_limit=${postsPerPage}&_cate=${category}`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Shop/shop?page=1&limit=${postsPerPage}&cate=${category}`)
             .then((res) => {
                 setProductList(res.data.products);
-                setPageCount(res.data.count_product);
+                setPageCount(res.data.countProduct);
             })
-            .catch((error) => {});
+            .catch((error) => {
+                console.log(error)
+            });
     }, [urlParams, category]);
 
     useEffect(() => {
         axios
-            .get(`${process.env.REACT_APP_BASE_URL}/category`)
+            .get(`${process.env.REACT_APP_BASE_URL}/Shop/get-category`)
             .then((res) => {
                 setCategories(res.data.categories);
             })
-            .catch((error) => {});
+            .catch((error) => {
+                
+            });
     }, []);
 
     const getProducts = (currenPage) => {
@@ -63,10 +68,10 @@ function Shop() {
             },
         });
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/shop?_page=${currenPage}&_limit=${postsPerPage}&_cate=${category}`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Shop/shop?page=${currenPage}&limit=${postsPerPage}&cate=${category}`)
             .then((res) => {
                 setProductList(res.data.products);
-                setPageCount(res.data.count_product);
+                setPageCount(res.data.countProduct);
             })
             .catch((error) => {});
     };
@@ -85,12 +90,12 @@ function Shop() {
                             <h5 className={cx('title-category')}>Category</h5>
                             <ul className={cx('title-product-list')}>
                                 {categories.map((result) => (
-                                    <li key={result._id} className={cx('title-product-item')}>
+                                    <li key={result.categoryId} className={cx('title-product-item')}>
                                         <div className={cx('product-item')}>
-                                            <Image className={cx('')} src={result.img} alt={''} />
+                                            <Image className={cx('')} src={result.image} alt={''} />
                                             <Link
                                                 className={cx('render-by-category')}
-                                                to={`/shop?_cate=${result.category}`}
+                                                to={`/shop?cate=${result.cate}`}
                                                 
                                             >
                                                 {result.title}
@@ -114,7 +119,7 @@ function Shop() {
                     <div className={cx('content-page', 'container_m')}>
                         <div className={cx('row')}>
                             {productList.map((result) => (
-                                <ProductItem key={result._id} listProduct={result} flexCol={'col-3'} />
+                                <ProductItem key={result.productId} listProduct={result} flexCol={'col-3'} />
                             ))}
                         </div>
                         <div className={styles['pagination-container']}>

@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import className from 'classnames/bind';
 import axios from 'axios';
 import styles from './Register.module.scss';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images/images';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,35 +14,22 @@ function Register() {
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
 
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleSubmit = () => {
         axios
-            .post(`http://localhost:13395/api/Account/register`, {
+            .post(`${process.env.REACT_APP_BASE_URL}/Account/register`, {
                 username,
                 password,
                 email,
             })
             .then((res) => {
-                console.log(res);
-                // if (res.status === 200) navigate('/login', {state: { from: 'register' }});
+                if (res.data.message === 'success') navigate('/login', { state: { from: 'register' } });
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Missing inputs') {
-                    toast.warn('Vui lòng nhập đủ thông tin 😘.', {
-                        position: 'top-right',
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: 'light',
-                    });
-                }
-                if (err === 'Account already exists') {
-                    toast.warn('Username đã có người đăng ký 🥺.', {
+                const err = error.response.data;
+                if (err === 'Username has been registered') {
+                    toast.warn('Username đã có người đăng ký.', {
                         position: 'top-right',
                         autoClose: 3000,
                         hideProgressBar: false,
@@ -56,6 +43,13 @@ function Register() {
                 }
             });
     };
+
+    // const handleCheckInput = () => {
+    //     const regexEmail = /^[a-zA-Z0-9]+@gmail\.com$/;
+    //     const regexUsername = /^[a-zA-Z0-9]{3,7}$/;
+
+
+    // }
 
     return (
         <Fragment>
@@ -96,7 +90,7 @@ function Register() {
                                         value={username}
                                         onChange={(e) => setUserName(e.target.value)}
                                     />
-                                    <div className={cx('error')}></div>
+                                    {/* <div className={cx('error')}>Username chứa 3-7 kí tự và không chứa ký tự đặc biệt.</div> */}
                                 </div>
                                 <div className={cx('auth-form__group')}>
                                     <input
@@ -108,7 +102,7 @@ function Register() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
-                                    <div className={cx('error')}></div>
+                                    {/* <div className={cx('error')}>Email chưa đúng định dạng.</div> */}
                                 </div>
                                 <div className={cx('auth-form__group')}>
                                     <input
@@ -122,21 +116,11 @@ function Register() {
                                     />
                                     <div className={cx('error')}></div>
                                 </div>
-                                <div className={cx('auth-form__group')}>
-                                    <input
-                                        type="password"
-                                        name="passwordConfim"
-                                        placeholder="Nhập lại mật khẩu"
-                                        className={cx('auth-form__input')}
-                                        id="auth-form__confirm-password"
-                                    />
-                                    <div className={cx('error')}></div>
-                                </div>
                             </div>
 
                             <div className={cx('auth-form__aside')}>
                                 <p className={cx('auth-form__policy-text')}>
-                                    Bằng việc đăng ký, bạn đã đồng ý với Nest - Multipurpose eCommerce về
+                                    Bằng việc đăng ký, bạn đã đồng ý với Nest - Multipurpose eCommerce về 
                                     <Link to={''} className={cx('auth-form__text-link')}>
                                         Điều khoản dịch vụ
                                     </Link>{' '}
@@ -154,7 +138,11 @@ function Register() {
                                 >
                                     TRỞ LẠI
                                 </Link>
-                                <button className={cx('btn btn--primary', 'view-cart')} onClick={handleSubmit}>
+                                <button
+                                    disabled={!username || !password || !email}
+                                    className={cx('btn', 'btn--primary', 'view-cart')}
+                                    onClick={handleSubmit}
+                                >
                                     ĐĂNG KÝ
                                 </button>
                             </div>

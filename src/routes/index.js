@@ -8,16 +8,10 @@ import Login from "~/pages/Login/Login"
 import Register from "~/pages/Register/Register"
 import Search from "~/pages/Search/Search"
 import Detail from "~/pages/Detail/Detail"
-import Success from "~/pages/Success/Success"
-import Reset from "~/pages/Reset/Reset"
-import Forgot from "~/pages/Forgot/Forgot"
 import Purchase from "~/pages/Purchase/Purchase"
-import Cancel from "~/pages/Cancel/Cancel"
 
 const publicRouter = [
     {path: '/', component: Home},
-    {path: '/success', component: Success, layout: null},
-    {path: '/cancel', component: Cancel, layout: null},
     {path: '/product-detail/:slug', component: Detail},
     {path: '/cart', component: Cart},
     {path: '/checkout', component: CheckOut},
@@ -26,8 +20,6 @@ const publicRouter = [
     {path: '/shop', component: Shop},
     {path: '/search', component: Search},
     {path: '/login', component: Login, layout: null},
-    {path: '/reset_password/:slug', component: Reset, layout: null},
-    {path: '/forgot_password', component: Forgot, layout: null},
     {path: '/register', component: Register, layout: null},
 
     {path: '/user/purchase', component: Purchase},

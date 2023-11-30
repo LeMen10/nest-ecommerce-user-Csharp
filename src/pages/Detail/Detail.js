@@ -37,13 +37,12 @@ function Detail({ setHeaderVariable }) {
             },
         });
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/api/Product/product-detail/${slug}`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Product/product-detail/${slug}`)
             .then((res) => {
                 setStateProduct(res.data.product);
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                if (error.response.status === 401) navigate('/login');
             });
     }, [navigate, slug]);
 
@@ -55,27 +54,27 @@ function Detail({ setHeaderVariable }) {
                 Authorization: `Bearer ${token}`,
             },
         });
-        api.post(`${process.env.REACT_APP_BASE_URL}/Product/${slug}/add-to-cart`, {
+        api.post(`${process.env.REACT_APP_BASE_URL}/Cart/${slug}/add-to-cart`, {
             quantity: quantityProduct,
         })
             .then((res) => {
-                if (res.status === 200) {
-                    const count = res.data.count;
-                    if (setHeaderVariable) setHeaderVariable(count);
+                const count = res.data.count;
+                if (setHeaderVariable) setHeaderVariable(count);
 
-                    toast.success('Đã thêm sản phẩm vào Giỏ hàng', {
-                        position: 'top-right',
-                        autoClose: 2000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: 'light',
-                    });
-                }
+                toast.success('Đã thêm sản phẩm vào Giỏ hàng', {
+                    position: 'top-right',
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'light',
+                });
             })
-            .catch((error) => {});
+            .catch((error) => {
+                if (error.response.status === 401) navigate('/login');
+            });
     };
     return (
         <Fragment>

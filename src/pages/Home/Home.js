@@ -12,7 +12,7 @@ const cx = className.bind(styles);
 
 function Home() {
     const [productList, setProductList] = useState([]);
-    // const postsPerPage = 10;
+    const postsPerPage = 10;
 
     useEffect(() => {
         const token = Cookies.get('token');
@@ -23,11 +23,9 @@ function Home() {
             },
         });
 
-        // api.get(`${process.env.REACT_APP_BASE_URL}/shop?_page=1&_limit=${postsPerPage}`)
-        api.get(`${process.env.REACT_APP_BASE_URL}/api/Product`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Product/get-products?page=1&limit=${postsPerPage}`)
             .then((res) => {
                 setProductList(res.data.products);
-                console.log(res.data);
             })
             .catch((error) => {});
     }, []);

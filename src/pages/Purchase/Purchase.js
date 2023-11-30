@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
-import { useNavigate,Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import className from 'classnames/bind';
 import styles from './Purchase.module.scss';
 import Image from '~/components/Image';
@@ -37,13 +37,12 @@ function Purchase() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/user/purchase?type=${type}`)
-            .then(function (res) {
-                setOrderDetails(res.data.order_details);
+        api.get(`${process.env.REACT_APP_BASE_URL}/Account/purchase?type=${type}`)
+            .then((res) => {
+                setOrderDetails(res.data.result);
             })
-            .catch(function (error) {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+            .catch((error) => {
+                if (error.response.status === 401) navigate('/login');
             });
     }, [navigate, type]);
 
@@ -89,14 +88,13 @@ function Purchase() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/user/order-cancel/${orderDetailId}`)
-            .then(function (res) {
+        api.post(`${process.env.REACT_APP_BASE_URL}/Account/order-cancel/${orderDetailId}`)
+            .then((res) => {
                 setCheckCancelled(false);
                 navigate('/user/purchase?type=cancelled');
             })
-            .catch(function (error) {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+            .catch((error) => {
+                if (error.response.status === 401) navigate('/login');
             });
     };
 
@@ -116,6 +114,13 @@ function Purchase() {
                         <span>Đã ghi nhận</span>
                     </Link>
                     <Link
+                        to={'?type=delivering'}
+                        className={cx('item-link', { active: activeLink === 'delivering' })}
+                        onClick={() => handleLinkClick('delivering')}
+                    >
+                        <span>Đang giao hàng</span>
+                    </Link>
+                    <Link
                         to={'?type=cancelled'}
                         className={cx('item-link', { active: activeLink === 'cancelled' })}
                         onClick={() => handleLinkClick('cancelled')}
@@ -133,18 +138,26 @@ function Purchase() {
 
                 {orderDetails.length > 0 ? (
                     orderDetails.map((result) => (
-                        <div key={result._id} className={cx('order-detail-wrap')}>
+                        <div key={result.orderDetailId} className={cx('order-detail-wrap')}>
                             <div>
                                 <div className={cx('order-detail')}>
                                     <div className={cx('order-state')}>
                                         <span>{result.status}</span>
+                                        {result.status !== 'Đã hủy' || result.status !== 'Hoàn thành' ? (
+                                            <></>
+                                        ) : (
+                                            <>
+                                                <span className={cx('payment-status')}></span>
+                                                <span>{result.paymentStatus}</span>
+                                            </>
+                                        )}
                                     </div>
                                     <div>
                                         <div>
                                             <span className={cx('product-detail')}>
                                                 <div className={cx('product-detail-left')}>
                                                     <div className={cx('img-product')}>
-                                                        <Image style={{ width: '100px' }} src={result.img} alt="" />
+                                                        <Image style={{ width: '100px' }} src={result.image} alt="" />
                                                     </div>
                                                     <div className={cx('title-product-wrap')}>
                                                         <span className={cx('title-product')}>{result.title}</span>
@@ -154,7 +167,7 @@ function Purchase() {
                                                     </div>
                                                 </div>
                                                 <div className={cx('price-total-wrap')}>
-                                                    <span className={cx('price-product')}>{result.price_total}$</span>
+                                                    <span className={cx('price-product')}>{result.total}$</span>
                                                 </div>
                                             </span>
                                         </div>
@@ -164,10 +177,10 @@ function Purchase() {
                             <div className={cx('order-line')}></div>
                             <div className={cx('order-total')}>
                                 <span>Thành tiền: </span>
-                                <p> {result.price_total}$</p>
+                                <p> {result.total}$</p>
                             </div>
                             <div style={{ padding: '12px 24px 24px', display: 'flex', justifyContent: 'flex-end' }}>
-                                {renderPage(result._id)}
+                                {renderPage(result.orderDetailId)}
                             </div>
                         </div>
                     ))

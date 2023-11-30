@@ -33,10 +33,11 @@ function Search() {
                 Authorization: `Bearer ${token}`,
             },
         });
-        api.post(`${process.env.REACT_APP_BASE_URL}/search?_query=${query}&_page=${1}&_limit=${postsPerPage}`)
+        api.post(`${process.env.REACT_APP_BASE_URL}/Site/search?query=${query}&page=${1}&limit=${postsPerPage}`)
             .then((res) => {
-                setProductList(res.data.products);
-                setPageCount(res.data.count_product);
+                console.log(res.data)
+                setProductList(res.data.result);
+                setPageCount(res.data.countProduct);
             })
             .catch((error) => {});
     }, [query, urlParams]);
@@ -50,10 +51,10 @@ function Search() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/search?_query=${query}&_page=${currenPage}&_limit=${postsPerPage}`)
+        api.post(`${process.env.REACT_APP_BASE_URL}/Site/search?query=${query}&page=${currenPage}&limit=${postsPerPage}`)
             .then((res) => {
-                setProductList(res.data.products);
-                setPageCount(res.data.count_product);
+                setProductList(res.data.result);
+                setPageCount(res.data.countProduct);
             })
             .catch((error) => {});
     };
@@ -79,7 +80,7 @@ function Search() {
                             <div className={cx('content-page', 'container_m')}>
                                 <div className={cx('row')}>
                                     {productList.map((result) => (
-                                        <ProductItem key={result._id} listProduct={result} flexCol={'col-2-4'} />
+                                        <ProductItem key={result.productId} listProduct={result} flexCol={'col-2-4'} />
                                     ))}
                                 </div>
                                 <ReactPaginate

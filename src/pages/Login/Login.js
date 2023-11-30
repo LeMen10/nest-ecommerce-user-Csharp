@@ -14,29 +14,29 @@ function Login() {
     const location = useLocation();
     const [username, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    // const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
     const previousPage = location.state?.from;
     const navigate = useNavigate();
 
     const handleSubmit = () => {
         axios
-            .post(`${process.env.REACT_APP_BASE_URL}/login`, {
+            .post(`${process.env.REACT_APP_BASE_URL}/Account/login`, {
                 username,
                 password,
             })
-            .then(function (response) {
-                Cookies.set('token', response.data.accessToken, { expires });
+            .then((res) => {
+                console.log(res.data)
+                Cookies.set('token', res.data.accessToken);
                 if (previousPage === 'register') {
                     navigate(-3);
                 } else {
                     navigate(-1);
                 }
-                // navigate('/');
             })
-            .catch(function (error) {
+            .catch((error) => {
                 const err = error.response.data.message;
                 if (err === 'Missing inputs') {
-                    toast.warn('VVui lòng nhập đủ thông tin 😘.', {
+                    toast.warn('Vui lòng nhập đủ thông tin 😘.', {
                         position: 'top-right',
                         autoClose: 3000,
                         hideProgressBar: false,
@@ -48,7 +48,7 @@ function Login() {
                     });
                 }
                 if (err === 'Invalid credentials') {
-                    toast.warn('Không tìm thấy tài khoản của bạn 🥺. Có thể bạn đã nhập sai thông tin.', {
+                    toast.warn('Không tìm thấy tài khoản của bạn.', {
                         position: 'top-right',
                         autoClose: 3000,
                         hideProgressBar: false,
@@ -62,11 +62,18 @@ function Login() {
             });
     };
 
+    const handleCancel = () => {
+        if (previousPage === 'register') {
+            navigate(-3);
+        } else {
+            navigate(-1);
+        }
+    }
     return (
         <Fragment>
             <ToastContainer
                 position="top-right"
-                autoClose={5000}
+                autoClose={3000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick
@@ -133,6 +140,7 @@ function Login() {
                             <div className={cx('auth-form__control')}>
                                 <Link
                                     to={'/'}
+                                    onClick={handleCancel}
                                     className={cx('btn auth-form__control-back', 'btn--normal js-modal-close')}
                                 >
                                     TRỞ LẠI

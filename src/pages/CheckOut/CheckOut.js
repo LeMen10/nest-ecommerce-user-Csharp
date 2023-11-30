@@ -7,7 +7,6 @@ import className from 'classnames/bind';
 import styles from './CheckOut.module.scss';
 import Image from '~/components/Image';
 import images from '~/assets/images/images';
-import { AddIcon } from '~/components/Icons';
 
 const cx = className.bind(styles);
 
@@ -15,23 +14,19 @@ function CheckOut() {
     const location = useLocation();
     const data = location.state?.data;
     const [payment, setPayment] = useState('Thanh toán khi nhận hàng');
-    console.log(payment)
     const navigate = useNavigate();
-    const [listCart, setListCart] = useState([]);
+    const [products, setProducts] = useState([]);
+
     const [fullName, setFullName] = useState();
     const [phoneNumber, setPhoneNumber] = useState();
     const [city, setCity] = useState();
     const [district, setDistrict] = useState();
     const [ward, setWard] = useState();
     const [specificAddress, setSpecificAddress] = useState();
-
-    const [recipientDetails, setRecipientDetails] = useState();
     const [priceTotal, setPriceTotal] = useState();
     const [stateAddress, setStateAddress] = useState(true);
     const [checkPushAddress, setCheckPushAddress] = useState(false);
-    const [changeAddress, setchangeAddress] = useState(false);
-    const [selectedAddressId, setSelectedAddressId] = useState(null);
-    const [addressActive, setAddressActive] = useState();
+    const [infoUser, setInfoUser] = useState();
 
     useEffect(() => {
         const token = Cookies.get('token');
@@ -42,14 +37,19 @@ function CheckOut() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/checkout`, { dataId: data })
+        api.post(`${process.env.REACT_APP_BASE_URL}/Site/product-checkout`, data)
             .then((res) => {
-                setListCart(res.data.products);
-                setPriceTotal(res.data.price_total);
+                var data = res.data.result;
+                var total = 0;
+                
+                data.map((item)=>(
+                    total += item.quantity*item.price
+                ))
+                setProducts(data);
+                setPriceTotal(total);
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                if (error.response.status === 401) navigate('/login');
             });
     }, [data, navigate]);
 
@@ -61,71 +61,38 @@ function CheckOut() {
                 Authorization: `Bearer ${token}`,
             },
         });
-        api.get(`${process.env.REACT_APP_BASE_URL}/get-address`)
+        api.get(`${process.env.REACT_APP_BASE_URL}/Site/get-address`)
             .then((res) => {
-                if (res.data.recipient_details.length > 0) {
-                    setRecipientDetails(res.data.recipient_details);
-                    setAddressActive(res.data.address_active);
-                    setSelectedAddressId(res.data.address_active[0]._id);
-                    setStateAddress(true);
-                } else {
+                var data = res.data.userResult;
+                if (res.data.message === 'No Address') {
                     setStateAddress(false);
+                } else {
+                    setStateAddress(true);
+                    setInfoUser(res.data.userResult);
+                    setFullName(data.fullName);
+                    setPhoneNumber(data.phone);
+                    setCity(data.city);
+                    setDistrict(data.district);
+                    setWard(data.ward);
+                    setSpecificAddress(data.specificAddress);
                 }
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                if (error.response.status === 401) navigate('/login');
             });
     }, [stateAddress, checkPushAddress, navigate]);
 
-    const handlePaypal = (order_id) => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/payment`, { priceTotal, order_id, productList: listCart })
-            .then((res) => {
-                window.location.href = res.data;
-            })
-            .catch((error) => {});
-    };
-
-    const handleBuyPaypal = () => {
-        const token = Cookies.get('token');
-        const newListCart = listCart.map((item) => {
-            var { _id, ...rest } = item;
-            return rest;
-        });
-
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/save-order`, {
-            order_items: newListCart,
-            recipientDetails: addressActive,
-            status: 'Chưa thanh toán',
-            payment_methods: payment,
-        })
-            .then((res) => {
-                const order_id = res.data.order_id;
-                if (res.status === 200) handlePaypal(order_id);
-            })
-            .catch((error) => {});
-    };
-
     const handleBuyLaterMoney = () => {
         const token = Cookies.get('token');
-        const newListCart = listCart.map((item) => {
-            var { _id, ...rest } = item;
-            return rest;
+        const shortList = products.map((item) => {
+            var { cartId, image, price, title, userId, ...rest } = item;
+            return {
+                quantity: rest.quantity,
+                productId: rest.productId,
+                status: "Đang xử lý",
+                paymentStatus: "Chưa thanh toán",
+                total: rest.quantity*price,
+            };
         });
 
         const api = axios.create({
@@ -135,18 +102,16 @@ function CheckOut() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/save-order`, {
-            order_items: newListCart,
-            recipientDetails: addressActive,
-            status: 'Chưa thanh toán',
-            payment_methods: payment,
+        api.post(`${process.env.REACT_APP_BASE_URL}/Payment/save-order`, {
+            payment,
+            orderDetails: shortList
         })
             .then((res) => {
-                if (res.status === 200) navigate('/user/purchase?type=noted');
+                if (res.data.message === "success") navigate('/user/purchase?type=noted');
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+                console.log(error)
+                if (error.response.status === 401) navigate('/login');
             });
     };
 
@@ -163,38 +128,25 @@ function CheckOut() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/update-address`, {
-            full_name: fullName,
-            phone_number: phoneNumber,
-            specific_address: specificAddress,
+        api.post(`${process.env.REACT_APP_BASE_URL}/Site/update-address`, {
+            phone: phoneNumber,
+            specificAddress,
             ward,
             district,
             city,
+            fullName,
         })
             .then((res) => {
-                if (res.status === 200) {
+                if (res.data.message === 'success') {
                     if (!stateAddress) setStateAddress(true);
                     if (checkPushAddress) {
                         setCheckPushAddress(false);
-                        setchangeAddress(true);
                     }
                 }
             })
-            .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+            .catch((err) => {
+                if (err.response.status === 401) navigate('/login');
             });
-    };
-
-    const handlePushAddress = () => {
-        setchangeAddress(false);
-        setCheckPushAddress(true);
-        setFullName('');
-        setPhoneNumber('');
-        setCity('');
-        setDistrict('');
-        setWard('');
-        setSpecificAddress('');
     };
 
     const handleBtnGoBack = () => {
@@ -202,33 +154,6 @@ function CheckOut() {
         else {
             setCheckPushAddress(false);
         }
-    };
-
-    const handleCheckboxChange = (event) => {
-        setSelectedAddressId(event.target.value);
-    };
-
-    const handleActiveAddress = () => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/get-address-active`, {
-            data_id: selectedAddressId,
-        })
-            .then((res) => {
-                setchangeAddress(false);
-                setSelectedAddressId(res.data.address_active[0]._id);
-                setAddressActive(res.data.address_active);
-            })
-            .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
-            });
     };
 
     return (
@@ -244,23 +169,25 @@ function CheckOut() {
                         nhận hàng
                     </h4>
                     <div className={cx('shipping-address')}>
-                        {addressActive && (
-                            <div style={{ display: 'flex' }}>
-                                <div style={{ fontWeight: '600' }}>
-                                    {addressActive[0].full_name} {addressActive[0].phone_number}
+                        {infoUser && (
+                            <>
+                                <div style={{ display: 'flex' }}>
+                                    <div style={{ fontWeight: '600' }}>
+                                        {infoUser.fullName} {infoUser.phone}
+                                    </div>
+                                    <p className={cx('address')}>
+                                        {infoUser.specificAddress}, Phường/Xã: {infoUser.ward}, Quận/Huyện:{' '}
+                                        {infoUser.district}, Tỉnh/TP: {infoUser.city}
+                                    </p>
                                 </div>
-                                <p className={cx('address')}>
-                                    {addressActive[0].specific_address}, Phường/Xã {addressActive[0].ward}, Quận/Huyện{' '}
-                                    {addressActive[0].district}, Tỉnh/TP {addressActive[0].city}
-                                </p>
-                            </div>
+                                <button
+                                    style={{ paddingLeft: '40px', backgroundColor: 'transparent' }}
+                                    onClick={() => setCheckPushAddress(true)}
+                                >
+                                    Thay đổi
+                                </button>
+                            </>
                         )}
-                        <button
-                            style={{ paddingLeft: '40px', backgroundColor: 'transparent' }}
-                            onClick={() => setchangeAddress(true)}
-                        >
-                            Thay đổi
-                        </button>
                     </div>
                 </div>
 
@@ -280,19 +207,19 @@ function CheckOut() {
                         </tr>
                     </thead>
                     <tbody>
-                        {listCart.length > 0 ? (
-                            listCart.map((result) => (
-                                <tr key={result._id}>
+                        {products.length > 0 ? (
+                            products.map((result) => (
+                                <tr key={result.cartId}>
                                     <td style={{ display: 'flex', alignItems: 'center', height: '131.5px' }}>
-                                        <Image style={{ width: '120px' }} src={result.img} alt="" />
+                                        <Image style={{ width: '120px' }} src={result.image} alt="" />
                                         <p style={{ paddingLeft: '10px' }}>{result.title}</p>
                                     </td>
                                     <td
                                         style={{ textAlign: 'center' }}
-                                        data-price={result._id}
+                                        data-price={result.cartId}
                                         className={cx('unit-price')}
                                     >
-                                        {result.price_unit}$
+                                        {result.price}$
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
                                         <p className={cx('quantity-product-checkout')}>{result.quantity}</p>
@@ -300,9 +227,9 @@ function CheckOut() {
                                     <td
                                         style={{ textAlign: 'center' }}
                                         className={cx('product-total')}
-                                        data-total={result._id}
+                                        data-total={result.cartId}
                                     >
-                                        {result.price_total}$
+                                        {result.price * result.quantity}$
                                     </td>
                                 </tr>
                             ))
@@ -333,7 +260,13 @@ function CheckOut() {
                                 <label htmlFor="later_money">Thanh toán tiền khi nhận hàng</label>
                             </div>
                             <div className={cx('paypal')}>
-                                <input type="radio" id="paypal" name="radio" value="Thanh toán bằng Paypal" onChange={handleRadio} />
+                                <input
+                                    type="radio"
+                                    id="paypal"
+                                    name="radio"
+                                    value="Thanh toán bằng Paypal"
+                                    onChange={handleRadio}
+                                />
                                 <label htmlFor="paypal">Thanh toán tiền bằng Paypal</label>
                             </div>
                         </div>
@@ -354,8 +287,8 @@ function CheckOut() {
                             ) : (
                                 <button
                                     className={cx('btn', 'btn--primary', 'btn-sm')}
-                                    onClick={handleBuyPaypal}
                                     style={{ marginRight: '12px' }}
+                                    disabled={payment === 'Thanh toán bằng Paypal'}
                                 >
                                     Đặt hàng
                                 </button>
@@ -447,66 +380,12 @@ function CheckOut() {
                                     >
                                         Trở lại
                                     </button>
-                                    <button className={cx('btn', 'btn--primary', 'view-cart')} onClick={updateAddress}>
-                                        Hoàn thành
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {changeAddress && (
-                <div className={cx('modal')}>
-                    <div className={cx('modal__overlay')}></div>
-                    <div className={cx('modal__body')}>
-                        <div className={cx('auth-form')}>
-                            <div className={cx('auth-form__container')}>
-                                <div className={cx('auth-form__header')}>
-                                    <h3 className={cx('auth-form__heading')}>Địa chỉ của tôi.</h3>
-                                </div>
-
-                                <div className={cx('address-list-wrap')}>
-                                    {recipientDetails &&
-                                        recipientDetails.map((item) => (
-                                            <div key={item._id} className={cx('address-item-wrap')}>
-                                                <div className={cx('input-check-address')}>
-                                                    <input
-                                                        type="checkbox"
-                                                        name="address-checkbox"
-                                                        value={item._id}
-                                                        onChange={handleCheckboxChange}
-                                                        checked={selectedAddressId === item._id}
-                                                    />
-                                                </div>
-                                                <div className={cx('address-item')}>
-                                                    <div style={{ fontWeight: '600' }}>
-                                                        {item.full_name} {item.phone_number}
-                                                    </div>
-                                                    <p style={{ width: '80%' }}>
-                                                        {item.specific_address}, {item.ward}, {item.district},{' '}
-                                                        {item.city}
-                                                    </p>
-                                                    <p style={{ paddingLeft: '10px', width: '24%' }}>Cập nhật</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                </div>
-                                <button className={cx('btn-add-address')} onClick={handlePushAddress}>
-                                    <AddIcon className={cx('icon-add-address')} />
-                                    Thêm địa chỉ mới
-                                </button>
-                                <div className={cx('auth-form__control')}>
-                                    <button
-                                        onClick={() => setchangeAddress(false)}
-                                        className={cx('btn auth-form__control-back', 'btn--normal')}
-                                    >
-                                        Trở lại
-                                    </button>
                                     <button
                                         className={cx('btn', 'btn--primary', 'view-cart')}
-                                        onClick={handleActiveAddress}
+                                        onClick={updateAddress}
+                                        disabled={
+                                            !specificAddress || !district || !ward || !phoneNumber || !fullName || !city
+                                        }
                                     >
                                         Hoàn thành
                                     </button>
