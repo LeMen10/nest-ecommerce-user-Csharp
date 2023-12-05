@@ -102,7 +102,7 @@ function CheckOut() {
             },
         });
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/Payment/save-order`, {
+        api.post(`${process.env.REACT_APP_BASE_URL}/Site/save-order`, {
             payment,
             orderDetails: shortList
         })
@@ -110,7 +110,6 @@ function CheckOut() {
                 if (res.data.message === "success") navigate('/user/purchase?type=noted');
             })
             .catch((error) => {
-                console.log(error)
                 if (error.response.status === 401) navigate('/login');
             });
     };

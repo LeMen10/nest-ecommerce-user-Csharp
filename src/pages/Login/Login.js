@@ -25,7 +25,6 @@ function Login() {
                 password,
             })
             .then((res) => {
-                console.log(res.data)
                 Cookies.set('token', res.data.accessToken);
                 if (previousPage === 'register') {
                     navigate(-3);

@@ -40,6 +40,7 @@ function Header({ variable }) {
         api.get(`${process.env.REACT_APP_BASE_URL}/Account/get-username`)
             .then((res) => {
                 setUsername(res.data.username);
+                console.log(res)
             })
             .catch((error) => {});
     }, [navigate]);

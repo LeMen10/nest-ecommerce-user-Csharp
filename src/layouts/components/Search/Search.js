@@ -28,7 +28,7 @@ function Search() {
             <div className={cx('input-search-wrap')}>
                 <input
                     className={cx('input-search')}
-                    placeholder="Search for items..."
+                    placeholder="Tìm kiếm sản phẩm..."
                     value={dataSearch}
                     onChange={(e) => setDataSearch(e.target.value)}
                     onKeyDown={handleKeyDown}
