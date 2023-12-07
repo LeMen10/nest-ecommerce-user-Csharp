@@ -13,7 +13,7 @@ const cx = className.bind(styles);
 function Search() {
     const query_String = window.location.search;
     const urlParam = new URLSearchParams(query_String);
-    const query = urlParam.get('_query');
+    const query = urlParam.get('query');
     const [productList, setProductList] = useState([]);
     const [pageCount, setPageCount] = useState();
     const postsPerPage = 10;
@@ -35,7 +35,6 @@ function Search() {
         });
         api.post(`${process.env.REACT_APP_BASE_URL}/Site/search?query=${query}&page=${1}&limit=${postsPerPage}`)
             .then((res) => {
-                console.log(res.data)
                 setProductList(res.data.result);
                 setPageCount(res.data.countProduct);
             })

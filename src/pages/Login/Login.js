@@ -145,6 +145,7 @@ function Login() {
                                     TRỞ LẠI
                                 </Link>
                                 <button
+                                    disabled={!username || !password}
                                     value="login"
                                     className={cx('btn', 'btn--primary', 'view-cart')}
                                     onClick={handleSubmit}

@@ -50,6 +50,7 @@ function CheckOut() {
             })
             .catch((error) => {
                 if (error.response.status === 401) navigate('/login');
+                if (error.response.status === 404) navigate('/cart');
             });
     }, [data, navigate]);
 

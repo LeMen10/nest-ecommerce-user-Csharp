@@ -14,7 +14,7 @@ function Search() {
     const handleSubmit = () => {
         var data = dataSearch;
         setDataSearch('');
-        navigate(`/search?_query=${data}`);
+        navigate(`/search?query=${data}`);
     };
 
     const handleKeyDown = (event) => {
