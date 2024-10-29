@@ -160,13 +160,12 @@ function CheckOut() {
         <div className={cx('container')}>
             <div className={cx('mt-4', 'mb-4')}>
                 <div className={cx('title-page')}>
-                    <h3>Thanh toán</h3>
+                    <h3>Payment</h3>
                 </div>
 
                 <div className={cx('shipping-address-wrap')}>
                     <h4 className={cx('shipping-address-title')}>
-                        <img alt="" style={{ marginRight: '10px', width: '20px' }} src={images.iconLocation} /> Địa chỉ
-                        nhận hàng
+                        <img alt="" style={{ marginRight: '10px', width: '20px' }} src={images.iconLocation} /> Shipping address
                     </h4>
                     <div className={cx('shipping-address')}>
                         {infoUser && (
@@ -184,7 +183,7 @@ function CheckOut() {
                                     style={{ paddingLeft: '40px', backgroundColor: 'transparent' }}
                                     onClick={() => setCheckPushAddress(true)}
                                 >
-                                    Thay đổi
+                                    Edit
                                 </button>
                             </>
                         )}
@@ -194,15 +193,15 @@ function CheckOut() {
                 <table className={cx('table', 'mt-4')}>
                     <thead>
                         <tr>
-                            <th scope="col">Sản phẩm</th>
+                            <th scope="col">Product</th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Đơn giá
+                                Unit price
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Số lượng
+                                Quantity
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Thành tiền
+                                Total
                             </th>
                         </tr>
                     </thead>
@@ -246,7 +245,7 @@ function CheckOut() {
 
                 <div className={cx('payment-area')}>
                     <div className={cx('payment-method')}>
-                        <p className={cx('payment-method-title')}>Phương thức thanh toán</p>
+                        <p className={cx('payment-method-title')}>Payment method</p>
                         <div value={payment}>
                             <div className={cx('later_money')}>
                                 <input
@@ -257,7 +256,7 @@ function CheckOut() {
                                     onChange={handleRadio}
                                     checked={payment === 'Thanh toán khi nhận hàng'}
                                 />
-                                <label htmlFor="later_money">Thanh toán tiền khi nhận hàng</label>
+                                <label htmlFor="later_money">Cash on delivery</label>
                             </div>
                             <div className={cx('paypal')}>
                                 <input
@@ -267,13 +266,13 @@ function CheckOut() {
                                     value="Thanh toán bằng Paypal"
                                     onChange={handleRadio}
                                 />
-                                <label htmlFor="paypal">Thanh toán tiền bằng Paypal</label>
+                                <label htmlFor="paypal">Pay with Paypal</label>
                             </div>
                         </div>
                     </div>
                     <div className={cx('bill-product')}>
                         <div className={cx('total-payment')}>
-                            Tổng thanh toán: <span className={cx('price-total-order')}>{priceTotal}$</span>
+                            Total payment: <span className={cx('price-total-order')}>{priceTotal}$</span>
                         </div>
                         <div className={cx('buy-button')}>
                             {payment === 'Thanh toán khi nhận hàng' ? (
@@ -282,7 +281,7 @@ function CheckOut() {
                                     onClick={handleBuyLaterMoney}
                                     style={{ marginRight: '12px' }}
                                 >
-                                    Đặt hàng
+                                    Order now
                                 </button>
                             ) : (
                                 <button
@@ -290,7 +289,7 @@ function CheckOut() {
                                     style={{ marginRight: '12px' }}
                                     disabled={payment === 'Thanh toán bằng Paypal'}
                                 >
-                                    Đặt hàng
+                                    Order now
                                 </button>
                             )}
                         </div>
@@ -305,9 +304,9 @@ function CheckOut() {
                         <div className={cx('auth-form')}>
                             <div className={cx('auth-form__container')}>
                                 <div className={cx('auth-form__header')}>
-                                    <h3 className={cx('auth-form__heading')}>Địa chỉ mới</h3>
+                                    <h3 className={cx('auth-form__heading')}>Create new address</h3>
                                     <p className={cx('auth-form__switch-btn')}>
-                                        Để đặt hàng, vui lòng thêm địa chỉ nhận hàng.
+                                        To order, please add a shipping address.
                                     </p>
                                 </div>
                                 <div className={cx('auth-form__form')}>
@@ -387,7 +386,7 @@ function CheckOut() {
                                             !specificAddress || !district || !ward || !phoneNumber || !fullName || !city
                                         }
                                     >
-                                        Hoàn thành
+                                        Confirm
                                     </button>
                                 </div>
                             </div>

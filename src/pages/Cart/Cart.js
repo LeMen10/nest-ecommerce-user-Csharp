@@ -154,7 +154,7 @@ function Cart({ setHeaderVariable }) {
         <div className={cx('container')}>
             <div className={cx('mt-4', 'mb-4')}>
                 <div className={cx('title-page')}>
-                    <h3>Giỏ hàng</h3>
+                    <h3>Cart</h3>
                 </div>
 
                 <table className={cx('table', 'mt-4')}>
@@ -172,18 +172,18 @@ function Cart({ setHeaderVariable }) {
                                     />
                                 </div>
                             </td>
-                            <th scope="col">Sản phẩm</th>
+                            <th scope="col">Product</th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Đơn giá
+                                Unit price
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Số lượng
+                                Quantity
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Thành tiền
+                                Total
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }} colSpan="2">
-                                Chỉnh sửa
+                                Edit
                             </th>
                         </tr>
                     </thead>
@@ -269,7 +269,7 @@ function Cart({ setHeaderVariable }) {
                 {cart.length > 0 ? (
                     <div className={cx('bill-product')}>
                         <div className={cx('total-payment')}>
-                            Tổng thanh toán: <span className={cx('price-total-order')}>{priceTotal}$</span>
+                            Total payment: <span className={cx('price-total-order')}>{priceTotal}$</span>
                         </div>
                         <div className={cx('buy-button')}>
                             <button
@@ -278,7 +278,7 @@ function Cart({ setHeaderVariable }) {
                                 style={{ marginRight: '12px' }}
                                 disabled={checkedItems.length === 0}
                             >
-                                Mua hàng
+                                Buy
                             </button>
                         </div>
                     </div>

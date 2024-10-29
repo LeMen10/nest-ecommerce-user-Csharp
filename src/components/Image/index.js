@@ -12,7 +12,7 @@ const Image = forwardRef(({ src, alt, className, fallback: customFallback = imag
         <img className={classNames(styles.wapper, className)} 
         ref={ref} 
         // src={fallback || `https://json-nest-backend-4f490aac7e05.herokuapp.com${src}`} 
-        src={fallback || src}
+        src={`http://localhost:13395/${src}` || fallback }
         alt={alt} {...props} 
         onError={handleErrol}
         />

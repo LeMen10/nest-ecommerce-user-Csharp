@@ -1,14 +1,13 @@
 import React from 'react';
 import className from 'classnames/bind';
 import styles from './Shop.module.scss';
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 import ProductItem from '~/layouts/components/ProductItem/ProductItem';
 import Image from '~/components/Image';
 import ReactPaginate from 'react-paginate';
-import Cookies from 'js-cookie';
 import { Link, useLocation } from 'react-router-dom';
 import images from '~/assets/images/images';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -28,57 +27,41 @@ function Shop() {
     const query_String = window.location.search;
     const urlParam = new URLSearchParams(query_String);
     const category = urlParam.get('cate');
-    
-    useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/Shop/shop?page=1&limit=${postsPerPage}&cate=${category}`)
-            .then((res) => {
-                setProductList(res.data.products);
-                setPageCount(res.data.countProduct);
-            })
-            .catch((error) => {
-                console.log(error)
-            });
+    useEffect(() => {
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Shop/shop?page=1&limit=${postsPerPage}&cate=${category}`);
+                setProductList(res.products);
+                setPageCount(res.countProduct);
+            } catch (error) {}
+        };
+
+        fetchApi();
     }, [urlParams, category]);
 
     useEffect(() => {
-        axios
-            .get(`${process.env.REACT_APP_BASE_URL}/Shop/get-category`)
-            .then((res) => {
-                setCategories(res.data.categories);
-            })
-            .catch((error) => {
-                
-            });
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Shop/get-category`);
+                setCategories(res.categories);
+            } catch (error) {}
+        };
+
+        fetchApi();
     }, []);
 
-    const getProducts = (currenPage) => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.get(`${process.env.REACT_APP_BASE_URL}/Shop/shop?page=${currenPage}&limit=${postsPerPage}&cate=${category}`)
-            .then((res) => {
-                setProductList(res.data.products);
-                setPageCount(res.data.countProduct);
-            })
-            .catch((error) => {});
+    const getProducts = async (currentPage) => {
+        try {
+            const res = await request.get(`/Shop/shop?page=${currentPage}&limit=${postsPerPage}&cate=${category}`);
+            setProductList(res.products);
+            setPageCount(res.countProduct);
+        } catch (error) {}
     };
 
     const handlePageClick = (event) => {
-        let currenPage = event.selected + 1;
-        getProducts(currenPage);
+        let currentPage = event.selected + 1;
+        getProducts(currentPage);
     };
 
     return (
@@ -87,17 +70,13 @@ function Shop() {
                 <div className={cx('page-shop')}>
                     <div className={cx('sidebar', 'container_m')}>
                         <div className={cx('categories-shop')}>
-                            <h5 className={cx('title-category')}>Danh mục</h5>
+                            <h5 className={cx('title-category')}>Category</h5>
                             <ul className={cx('title-product-list')}>
                                 {categories.map((result) => (
                                     <li key={result.categoryId} className={cx('title-product-item')}>
                                         <div className={cx('product-item')}>
                                             <Image className={cx('')} src={result.image} alt={''} />
-                                            <Link
-                                                className={cx('render-by-category')}
-                                                to={`/shop?cate=${result.cate}`}
-                                                
-                                            >
+                                            <Link className={cx('render-by-category')} to={`/shop?cate=${result.cate}`}>
                                                 {result.title}
                                             </Link>
                                         </div>
@@ -106,9 +85,9 @@ function Shop() {
                                 ))}
                             </ul>
                         </div>
-                        <div className={cx("banner-img-sidebar")}>
+                        <div className={cx('banner-img-sidebar')}>
                             <img src={images.banner11} alt="" />
-                            <div className={cx("title-banner-sidebar")}>
+                            <div className={cx('title-banner-sidebar')}>
                                 <p>Oganic</p>
                                 <h4>
                                     Sale 17% on <span>Organic</span> Juice

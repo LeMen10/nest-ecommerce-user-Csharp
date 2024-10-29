@@ -1,12 +1,11 @@
 import React, { Fragment } from 'react';
-import axios from 'axios';
 import className from 'classnames/bind';
 import styles from './Search.module.scss';
 import ProductItem from '~/layouts/components/ProductItem/ProductItem';
 import ReactPaginate from 'react-paginate';
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -26,46 +25,33 @@ function Search() {
     }, [location]);
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        api.post(`${process.env.REACT_APP_BASE_URL}/Site/search?query=${query}&page=${1}&limit=${postsPerPage}`)
-            .then((res) => {
-                setProductList(res.data.result);
-                setPageCount(res.data.countProduct);
-            })
-            .catch((error) => {});
+        const fetchApi = async () => {
+            try {
+                const res = await request.post(`/Site/search?query=${query}&page=${1}&limit=${postsPerPage}`);
+                setProductList(res.result);
+                setPageCount(res.countProduct);
+            } catch (error) {}
+        };
+
+        fetchApi();
     }, [query, urlParams]);
 
-    const getProducts = (currenPage) => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/Site/search?query=${query}&page=${currenPage}&limit=${postsPerPage}`)
-            .then((res) => {
-                setProductList(res.data.result);
-                setPageCount(res.data.countProduct);
-            })
-            .catch((error) => {});
+    const getProducts = async (currentPage) => {
+        try {
+            const res = await request.post(`Site/search?query=${query}&page=${currentPage}&limit=${postsPerPage}`);
+            setProductList(res.result);
+            setPageCount(res.countProduct);
+        } catch (error) {}
     };
 
     const handlePageClick = (event) => {
-        let currenPage = event.selected + 1;
-        getProducts(currenPage);
+        let currentPage = event.selected + 1;
+        getProducts(currentPage);
     };
     return (
         <div className={cx('container_m')}>
             <div className={cx('title-page')}>
-                <h3>Tìm kiếm</h3>
+                <h3>Search</h3>
             </div>
             <div className={cx('result-title')}>
                 <p>

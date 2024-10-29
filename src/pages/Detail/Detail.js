@@ -1,14 +1,13 @@
 import React from 'react';
 import { Fragment, useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import className from 'classnames/bind';
 import styles from './Detail.module.scss';
 import Image from '~/components/Image';
-import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PropTypes from 'prop-types';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -23,58 +22,43 @@ function Detail({ setHeaderVariable }) {
     };
     const decreaseProduct = () => {
         setQuantityProduct(quantityProduct - 1);
-        if (quantityProduct <= 1) {
-            setQuantityProduct(1);
-        }
+        if (quantityProduct <= 1) setQuantityProduct(1);
     };
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.get(`${process.env.REACT_APP_BASE_URL}/Product/product-detail/${slug}`)
-            .then((res) => {
-                setStateProduct(res.data.product);
-            })
-            .catch((error) => {
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Product/product-detail/${slug}`);
+                setStateProduct(res.product);
+            } catch (error) {
                 if (error.response.status === 401) navigate('/login');
-            });
+            }
+        };
+
+        fetchApi();
     }, [navigate, slug]);
 
-    const handleSubmit = () => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        api.post(`${process.env.REACT_APP_BASE_URL}/Cart/${slug}/add-to-cart`, {
-            quantity: quantityProduct,
-        })
-            .then((res) => {
-                const count = res.data.count;
-                if (setHeaderVariable) setHeaderVariable(count);
-
-                toast.success('Đã thêm sản phẩm vào Giỏ hàng', {
-                    position: 'top-right',
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'light',
-                });
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
+    const handleSubmit = async () => {
+        try {
+            const res = await request.post(`/Cart/${slug}/add-to-cart`, {
+                quantity: quantityProduct,
             });
+            const count = res.count;
+            if (setHeaderVariable) setHeaderVariable(count);
+
+            toast.success('Đã thêm sản phẩm vào Giỏ hàng', {
+                position: 'top-right',
+                autoClose: 2000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+        } catch (error) {
+            if (error.response.status === 401) navigate('/login');
+        }
     };
     return (
         <Fragment>
