@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import { CartIcon, HeartIcon, UserIcon } from '~/components/Icons';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -19,11 +20,8 @@ function Header({ variable }) {
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY >= 31) {
-                setBoxShadowHeader('header-top-z-index');
-            } else {
-                setBoxShadowHeader('');
-            }
+            if (window.scrollY >= 31) setBoxShadowHeader('header-top-z-index'); 
+            else setBoxShadowHeader('');
         };
         window.addEventListener('scroll', handleScroll);
     }, []);
@@ -122,7 +120,7 @@ function Header({ variable }) {
                                                 className={cx('logged-dropdown-item-content')}
                                             >
                                                 <i className={cx('fa-solid', 'fa-cart-shopping')}></i>
-                                                <p>Đơn mua</p>
+                                                <p>Purchase order</p>
                                             </Link>
                                         </li>
                                         <li className={cx('logged-dropdown-item')}>
@@ -130,7 +128,7 @@ function Header({ variable }) {
                                                 <i
                                                     className={cx('fa-solid', 'fa-right-from-bracket', 'icon-logout')}
                                                 ></i>
-                                                <p className={cx('js-log-out')}>Đăng xuất</p>
+                                                <p className={cx('js-log-out')}>Log out</p>
                                             </div>
                                         </li>
                                     </ul>

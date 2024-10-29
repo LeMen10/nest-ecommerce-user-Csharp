@@ -7,6 +7,7 @@ import styles from './Home.module.scss';
 import ProductItem from '~/layouts/components/ProductItem/ProductItem';
 import images from '~/assets/images/images';
 import TypicalComponent from '~/layouts/components/TypicalComponent/TypicalComponent';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -15,19 +16,14 @@ function Home() {
     const postsPerPage = 10;
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Product/get-products?page=1&limit=${postsPerPage}`);
+                setProductList(res.products);
+            } catch (error) {}
+        };
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/Product/get-products?page=1&limit=${postsPerPage}`)
-            .then((res) => {
-                setProductList(res.data.products);
-            })
-            .catch((error) => {});
+        fetchApi();
     }, []);
 
     const topSelling = [

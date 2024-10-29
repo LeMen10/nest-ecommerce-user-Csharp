@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import className from 'classnames/bind';
 import styles from './Purchase.module.scss';
 import Image from '~/components/Image';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -29,21 +30,16 @@ function Purchase() {
     }, [type]);
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.get(`${process.env.REACT_APP_BASE_URL}/Account/purchase?type=${type}`)
-            .then((res) => {
-                setOrderDetails(res.data.result);
-            })
-            .catch((error) => {
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Account/purchase?type=${type}`);
+                setOrderDetails(res.result);
+            } catch (error) {
                 if (error.response.status === 401) navigate('/login');
-            });
+            }
+        };
+
+        fetchApi();
     }, [navigate, type]);
 
     const renderPage = (id) => {
@@ -79,23 +75,14 @@ function Purchase() {
         }
     };
 
-    const handleCancelledOrder = () => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/Account/order-cancel/${orderDetailId}`)
-            .then((res) => {
-                setCheckCancelled(false);
-                navigate('/user/purchase?type=cancelled');
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
-            });
+    const handleCancelledOrder = async () => {
+        try {
+            await request.post(`/Account/order-cancel/${orderDetailId}`);
+            setCheckCancelled(false);
+            navigate('/user/purchase?type=cancelled');
+        } catch (error) {
+            if (error.response.status === 401) navigate('/login');
+        }
     };
 
     return (

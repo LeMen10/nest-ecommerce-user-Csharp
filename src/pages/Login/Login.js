@@ -26,11 +26,8 @@ function Login() {
             })
             .then((res) => {
                 Cookies.set('token', res.data.accessToken);
-                if (previousPage === 'register') {
-                    navigate(-3);
-                } else {
-                    navigate(-1);
-                }
+                if (previousPage === 'register')navigate(-3); 
+                else navigate(-1);
             })
             .catch((error) => {
                 const err = error.response.data.message;
@@ -62,11 +59,8 @@ function Login() {
     };
 
     const handleCancel = () => {
-        if (previousPage === 'register') {
-            navigate(-3);
-        } else {
-            navigate(-1);
-        }
+        if (previousPage === 'register') navigate(-3);
+        else navigate(-1);
     }
     return (
         <Fragment>
