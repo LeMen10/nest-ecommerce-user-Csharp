@@ -9,6 +9,8 @@ import Register from "~/pages/Register/Register"
 import Search from "~/pages/Search/Search"
 import Detail from "~/pages/Detail/Detail"
 import Purchase from "~/pages/Purchase/Purchase"
+import Reset from "~/pages/Reset/Reset"
+import Forgot from "~/pages/Forgot/Forgot"
 
 const publicRouter = [
     {path: '/', component: Home},
@@ -21,8 +23,9 @@ const publicRouter = [
     {path: '/search', component: Search},
     {path: '/login', component: Login, layout: null},
     {path: '/register', component: Register, layout: null},
-
     {path: '/user/purchase', component: Purchase},
+    {path: '/reset-password', component: Reset, layout: null},
+    {path: '/forgot-password', component: Forgot, layout: null},
 ]
 
 const privateRouter = [

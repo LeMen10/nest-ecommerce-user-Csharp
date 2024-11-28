@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import className from 'classnames/bind';
 import axios from 'axios';
 import styles from './Login.module.scss';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import images from '~/assets/images/images';
 import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
@@ -11,11 +11,9 @@ import 'react-toastify/dist/ReactToastify.css';
 const cx = className.bind(styles);
 
 function Login() {
-    const location = useLocation();
     const [username, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-    const previousPage = location.state?.from;
     const navigate = useNavigate();
 
     const handleSubmit = () => {
@@ -25,10 +23,9 @@ function Login() {
                 password,
             })
             .then((res) => {
-                console.log(res)
                 Cookies.set('token', res.data.accessToken, {expires});
-                if (previousPage === 'register') navigate('/'); 
-                else navigate('/');
+                navigate('/');
+                window.location.reload();
             })
             .catch((error) => {
                 if (error.response.status === 404) {
@@ -47,8 +44,7 @@ function Login() {
     };
 
     const handleCancel = () => {
-        if (previousPage === 'register') navigate(-3);
-        else navigate(-1);
+        navigate('/');
     }
     return (
         <Fragment>
@@ -106,7 +102,7 @@ function Login() {
                             <div className={cx('auth-form__aside')}>
                                 <p className={cx('auth-form__help')}>
                                     <Link
-                                        to={'/forgot_password'}
+                                        to={'/forgot-password'}
                                         className={cx('auth-form__help-link', 'auth-form__help-forgot')}
                                     >
                                         Quên mật khẩu
