@@ -5,27 +5,27 @@ import styles from './Home.module.scss';
 import ProductItem from '~/layouts/components/ProductItem/ProductItem';
 import images from '~/assets/images/images';
 import TypicalComponent from '~/layouts/components/TypicalComponent/TypicalComponent';
-import * as request from '~/utils/request';
-import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 
 const cx = className.bind(styles);
 
 function Home() {
-    const navigate = useNavigate();
     const [productList, setProductList] = useState([]);
     const postsPerPage = 10;
 
     useEffect(() => {
-        const fetchApi = async () => {
-            try {
-                const res = await request.get(`/Product/get-products?page=1&limit=${postsPerPage}`);
-                setProductList(res.products);
-            } catch (error) { if (error.response.status === 401) navigate('/login'); }
-        };
+        const api = axios.create({
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
 
-        fetchApi();
-    }, [navigate]);
+        api.get(`${process.env.REACT_APP_BASE_URL}/Product/get-products?page=1&limit=${postsPerPage}`)
+            .then((res) => {
+                setProductList(res.data.products);
+            })
+            .catch((error) => {});
+    }, []);
 
     const topSelling = [
         { img: images.thumbnail1, title: 'Nestle Original Coffee-Mate Coffee Creamer', price: 32 },
