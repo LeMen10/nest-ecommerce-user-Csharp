@@ -1,6 +1,4 @@
 import React from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import { Fragment, useState, useEffect } from 'react';
 import className from 'classnames/bind';
 import styles from './Home.module.scss';
@@ -77,7 +75,7 @@ function Home() {
             <div className={cx('popular-products')}>
                 <div className={cx('container_m')}>
                     <div className={cx('section-title')}>
-                        <h3 className={cx('title')}>Popular Products</h3>
+                        <h3 className={cx('title')}>Sản phẩm phổ biến</h3>
                     </div>
                     <div className={cx('tab-content')}>
                         <div className={cx('row')}>
@@ -93,19 +91,19 @@ function Home() {
                 <div className={cx('container_m')}>
                     <div className={cx('row')}>
                         <div className={cx('col', 'col-3', 'col-4', 'col-6', 'col-12')}>
-                            <h4 className={cx('typical-products-title', 'mb-30')}>Top Selling</h4>
+                            <h4 className={cx('typical-products-title', 'mb-30')}>Bán chạy nhất</h4>
                             <TypicalComponent data={topSelling} />
                         </div>
                         <div className={cx('col', 'col-3', 'col-4', 'col-6', 'col-12')}>
-                            <h4 className={cx('typical-products-title', 'mb-30')}>Trending Products</h4>
+                            <h4 className={cx('typical-products-title', 'mb-30')}>Sản phẩm thịnh hành</h4>
                             <TypicalComponent data={trendingProducts} />
                         </div>
                         <div className={cx('col', 'col-3', 'col-4', 'col-6', 'col-12')}>
-                            <h4 className={cx('typical-products-title', 'mb-30')}>Recently Added</h4>
+                            <h4 className={cx('typical-products-title', 'mb-30')}>Mới thêm vào</h4>
                             <TypicalComponent data={recentlyAdded} />
                         </div>
                         <div className={cx('col', 'col-3', 'col-4', 'col-6', 'col-12')}>
-                            <h4 className={cx('typical-products-title', 'mb-30')}>Top Rated</h4>
+                            <h4 className={cx('typical-products-title', 'mb-30')}>Đánh giá cao nhất</h4>
                             <TypicalComponent data={topRated} />
                         </div>
                     </div>
