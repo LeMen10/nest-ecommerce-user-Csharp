@@ -16,7 +16,7 @@ function Purchase() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const type = urlParams.get('type');
-
+    console.log(orderDetails)
     const [activeLink, setActiveLink] = useState('noted');
 
     const handleLinkClick = (type) => {
@@ -31,7 +31,6 @@ function Purchase() {
         const fetchApi = async () => {
             try {
                 const res = await request.get(`/Account/purchase?type=${type}`);
-                console.log(res)
                 setOrderDetails(res.result);
             } catch (error) { if (error.response.status === 401) navigate('/login'); }
         };
@@ -39,11 +38,14 @@ function Purchase() {
         fetchApi();
     }, [navigate, type]);
 
-    const renderPage = (id) => {
+    const renderPage = (orderDetailId, productId) => {
         switch (type) {
             case 'complete':
                 return (
-                    <button className={cx('btn')} style={{ border: '1px solid #e8e8e8' }}>
+                    <button className={cx('btn')} style={{ border: '1px solid #e8e8e8' }}
+                        onClick={() => { 
+                            navigate(`/product-detail/${productId}`)
+                    }}>
                         Mua lại
                     </button>
                 );
@@ -54,9 +56,9 @@ function Purchase() {
                         style={{ border: '1px solid #e8e8e8' }}
                         onClick={() => {
                             setCheckCancelled(true);
-                            setOrderDetailId(id);
+                            setOrderDetailId(orderDetailId);
                         }}
-                        data-target={id}
+                        data-target={orderDetailId}
                     >
                         Hủy đơn hàng
                     </button>
@@ -158,7 +160,7 @@ function Purchase() {
                                 <p> {result.total}$</p>
                             </div>
                             <div style={{ padding: '12px 24px 24px', display: 'flex', justifyContent: 'flex-end' }}>
-                                {renderPage(result.orderDetailId)}
+                                {renderPage(result.orderDetailId, result.productId)}
                             </div>
                         </div>
                     ))

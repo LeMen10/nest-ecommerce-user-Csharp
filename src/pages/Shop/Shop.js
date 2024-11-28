@@ -70,7 +70,7 @@ function Shop() {
                 <div className={cx('page-shop')}>
                     <div className={cx('sidebar', 'container_m')}>
                         <div className={cx('categories-shop')}>
-                            <h5 className={cx('title-category')}>Category</h5>
+                            <h5 className={cx('title-category')}>Danh mục</h5>
                             <ul className={cx('title-product-list')}>
                                 {categories.map((result) => (
                                     <li key={result.categoryId} className={cx('title-product-item')}>

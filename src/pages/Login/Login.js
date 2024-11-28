@@ -25,26 +25,14 @@ function Login() {
                 password,
             })
             .then((res) => {
+                console.log(res)
                 Cookies.set('token', res.data.accessToken, {expires});
-                if (previousPage === 'register')navigate(-3); 
-                else navigate(-1);
+                if (previousPage === 'register') navigate('/'); 
+                else navigate('/');
             })
             .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Missing inputs') {
-                    toast.warn('Vui lòng nhập đủ thông tin 😘.', {
-                        position: 'top-right',
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: 'light',
-                    });
-                }
-                if (err === 'Invalid credentials') {
-                    toast.warn('Không tìm thấy tài khoản của bạn.', {
+                if (error.response.status === 404) {
+                    toast.warn('Bạn chưa đăng ký tài khoản.', {
                         position: 'top-right',
                         autoClose: 3000,
                         hideProgressBar: false,

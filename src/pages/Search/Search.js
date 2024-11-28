@@ -51,7 +51,7 @@ function Search() {
     return (
         <div className={cx('container_m')}>
             <div className={cx('title-page')}>
-                <h3>Search</h3>
+                <h3>Tìm kiếm</h3>
             </div>
             <div className={cx('result-title')}>
                 <p>

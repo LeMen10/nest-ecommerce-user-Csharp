@@ -14,7 +14,6 @@ function Cart({ setHeaderVariable }) {
     const [cart, setCarts] = useState([]);
     const [checkedItems, setCheckedItems] = useState([]);
     const [priceTotal, setPriceTotal] = useState();
-console.log(checkedItems)
     const increaseProduct = (event) => {
         const targetId = event.target.dataset.target;
         // Lấy thẻ input gần thẻ vừa ấn
@@ -48,9 +47,7 @@ console.log(checkedItems)
             targetElement.value = 1;
             quantityValue = 1;
             priceTotal.innerText = priceUnitValue + '$';
-        } else {
-            handleChangeQuantity(quantityValue, targetId, priceTotalValue);
-        }
+        } else { handleChangeQuantity(quantityValue, targetId, priceTotalValue); }
     };
 
     const handleChangeQuantity = async (quantityValue, targetId) => {
@@ -68,10 +65,10 @@ console.log(checkedItems)
             try {
                 const res = await request.get(`/Cart/get-cart`);
                 setCarts(res.result);
-            } catch (error) {  }
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
         };
         fetchApi();
-    }, []);
+    }, [navigate]);
 
     const deleteProductItem = async (event) => {
         const dataId = Number(event.target.dataset.id);
@@ -88,7 +85,6 @@ console.log(checkedItems)
         const item = event.target.value;
         const isChecked = event.target.checked;
         isChecked ? setCheckedItems([...checkedItems, Number(item)]) : setCheckedItems(checkedItems.filter((i) => i !== Number(item)));
-        
     };
 
     useEffect(() => {
