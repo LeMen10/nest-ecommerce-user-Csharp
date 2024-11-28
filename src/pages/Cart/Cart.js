@@ -1,12 +1,11 @@
 import React from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import className from 'classnames/bind';
 import styles from './Cart.module.scss';
 import Image from '~/components/Image';
 import PropTypes from 'prop-types';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -15,7 +14,7 @@ function Cart({ setHeaderVariable }) {
     const [cart, setCarts] = useState([]);
     const [checkedItems, setCheckedItems] = useState([]);
     const [priceTotal, setPriceTotal] = useState();
-
+console.log(checkedItems)
     const increaseProduct = (event) => {
         const targetId = event.target.dataset.target;
         // Lấy thẻ input gần thẻ vừa ấn
@@ -54,81 +53,52 @@ function Cart({ setHeaderVariable }) {
         }
     };
 
-    const handleChangeQuantity = (quantityValue, targetId) => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/Cart/update-quantity`, {
-            quantity: quantityValue,
-            cartId: Number(targetId),
-        })
-            .then((res) => {
-                setCarts(res.data.result);
-                handleQuantity(res.data.result);
-            })
-            .catch((error) => {
-                const err = error.response.data.message;
-                if (err === 'Invalid access token') navigate('/login');
+    const handleChangeQuantity = async (quantityValue, targetId) => {
+        try {
+            const res = await request.post(`/Cart/update-quantity`, {
+                quantity: quantityValue,
+                cartId: Number(targetId),
             });
+            setCarts(res.result);
+        } catch (error) {if (error.response.status === 401) navigate('/login');}
     };
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Cart/get-cart`);
+                setCarts(res.result);
+            } catch (error) {  }
+        };
+        fetchApi();
+    }, []);
 
-        api.get(`${process.env.REACT_APP_BASE_URL}/Cart/get-cart`)
-            .then((res) => {
-                setCarts(res.data.result);
-                handleQuantity(res.data.result);
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
-            });
-    }, [navigate]);
-
-    const deleteProductItem = (event) => {
-        const token = Cookies.get('token');
+    const deleteProductItem = async (event) => {
         const dataId = Number(event.target.dataset.id);
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.delete(`${process.env.REACT_APP_BASE_URL}/Cart/delete-cart-item/${dataId}`)
-            .then((res) => {
-                const count = res.data.count;
-                if (setHeaderVariable) setHeaderVariable(count);
-                setCarts(res.data.carts);
-                handleQuantity(res.data.carts);
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
-            });
-    };
-
-    const handleQuantity = (carts) => {
-        var total = 0;
-        carts.map((item) => (total += item.price * item.quantity));
-        setPriceTotal(total);
+        try {
+            const res = await request.delete_method(`/Cart/delete-cart-item/${dataId}`);
+            const count = res.count;
+            checkedItems.forEach((item, index) => {if(item===dataId){checkedItems.splice(index, 1)}})
+            if (setHeaderVariable) setHeaderVariable(count);
+            setCarts(res.carts);
+        } catch (error) {if (error.response.status === 401) navigate('/login');}
     };
 
     const handleChange = (event) => {
         const item = event.target.value;
         const isChecked = event.target.checked;
-        isChecked ? setCheckedItems([...checkedItems, item]) : setCheckedItems(checkedItems.filter((i) => i !== item));
+        isChecked ? setCheckedItems([...checkedItems, Number(item)]) : setCheckedItems(checkedItems.filter((i) => i !== Number(item)));
+        
     };
+
+    useEffect(() => {
+        var total = 0;
+        console.log(cart)
+        cart.forEach ((item) => {
+            if (checkedItems.includes(item.cartId)) { total += item.price * item.quantity; }
+        });
+        setPriceTotal(total);
+    }, [checkedItems, cart]);
 
     const handleCheckAll = (event) => {
         const arrItemChecked = document.querySelectorAll(`[name="checkProductItem"]`);
@@ -154,7 +124,7 @@ function Cart({ setHeaderVariable }) {
         <div className={cx('container')}>
             <div className={cx('mt-4', 'mb-4')}>
                 <div className={cx('title-page')}>
-                    <h3>Cart</h3>
+                    <h3>Giỏ hàng</h3>
                 </div>
 
                 <table className={cx('table', 'mt-4')}>
@@ -172,18 +142,18 @@ function Cart({ setHeaderVariable }) {
                                     />
                                 </div>
                             </td>
-                            <th scope="col">Product</th>
+                            <th scope="col">Sản phẩm</th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Unit price
+                                Giá ban đầu
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Quantity
+                                Số lượng
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Total
+                                Tổng tiền
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }} colSpan="2">
-                                Edit
+                                Chỉnh sửa
                             </th>
                         </tr>
                     </thead>
@@ -269,7 +239,7 @@ function Cart({ setHeaderVariable }) {
                 {cart.length > 0 ? (
                     <div className={cx('bill-product')}>
                         <div className={cx('total-payment')}>
-                            Total payment: <span className={cx('price-total-order')}>{priceTotal}$</span>
+                            Tổng thanh toán: <span className={cx('price-total-order')}>{priceTotal}$</span>
                         </div>
                         <div className={cx('buy-button')}>
                             <button
@@ -278,7 +248,7 @@ function Cart({ setHeaderVariable }) {
                                 style={{ marginRight: '12px' }}
                                 disabled={checkedItems.length === 0}
                             >
-                                Buy
+                                Mua ngay
                             </button>
                         </div>
                     </div>

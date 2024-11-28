@@ -14,7 +14,7 @@ function Login() {
     const location = useLocation();
     const [username, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    // const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
     const previousPage = location.state?.from;
     const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ function Login() {
                 password,
             })
             .then((res) => {
-                Cookies.set('token', res.data.accessToken);
+                Cookies.set('token', res.data.accessToken, {expires});
                 if (previousPage === 'register')navigate(-3); 
                 else navigate(-1);
             })

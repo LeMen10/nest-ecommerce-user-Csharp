@@ -1,12 +1,11 @@
 import React from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import className from 'classnames/bind';
 import styles from './CheckOut.module.scss';
 import Image from '~/components/Image';
 import images from '~/assets/images/images';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -29,47 +28,33 @@ function CheckOut() {
     const [infoUser, setInfoUser] = useState();
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/Site/product-checkout`, data)
-            .then((res) => {
-                var data = res.data.result;
+        (async () => {
+            try {
+                const res = await request.post(`/Site/product-checkout`, data);
+                var rs = res.result;
                 var total = 0;
                 
-                data.map((item)=>(
-                    total += item.quantity*item.price
-                ))
-                setProducts(data);
+                rs.map((item)=>( total += item.quantity*item.price ))
+                setProducts(rs);
                 setPriceTotal(total);
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
+            } catch (error) { 
+                console.log(error)
+                if (error.response.status === 401) navigate('/login'); 
                 if (error.response.status === 404) navigate('/cart');
-            });
+            }
+        })();
     }, [data, navigate]);
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        api.get(`${process.env.REACT_APP_BASE_URL}/Site/get-address`)
-            .then((res) => {
-                var data = res.data.userResult;
-                if (res.data.message === 'No Address') {
+        (async () => {
+            try {
+                const res = await request.get(`/Site/get-address`);
+                var data = res.userResult;
+                if (res.message === 'No Address') {
                     setStateAddress(false);
                 } else {
                     setStateAddress(true);
-                    setInfoUser(res.data.userResult);
+                    setInfoUser(res.userResult);
                     setFullName(data.fullName);
                     setPhoneNumber(data.phone);
                     setCity(data.city);
@@ -77,14 +62,11 @@ function CheckOut() {
                     setWard(data.ward);
                     setSpecificAddress(data.specificAddress);
                 }
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
-            });
+            } catch (error) {  }
+        })();
     }, [stateAddress, checkPushAddress, navigate]);
 
-    const handleBuyLaterMoney = () => {
-        const token = Cookies.get('token');
+    const handleBuyLaterMoney = async () => {
         const shortList = products.map((item) => {
             var { cartId, image, price, title, userId, ...rest } = item;
             return {
@@ -96,76 +78,50 @@ function CheckOut() {
             };
         });
 
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.post(`${process.env.REACT_APP_BASE_URL}/Site/save-order`, {
-            payment,
-            orderDetails: shortList
-        })
-            .then((res) => {
-                if (res.data.message === "success") navigate('/user/purchase?type=noted');
-            })
-            .catch((error) => {
-                if (error.response.status === 401) navigate('/login');
+        try {
+            const res = await request.post(`/Site/save-order`, {
+                payment,
+                orderDetails: shortList
             });
+            if (res.message === "success") navigate('/user/purchase?type=noted');
+        } catch (error) {  }
     };
 
     const handleRadio = (event) => {
         setPayment(event.target.value);
     };
 
-    const updateAddress = () => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
+    const updateAddress = async () => {
 
-        api.post(`${process.env.REACT_APP_BASE_URL}/Site/update-address`, {
-            phone: phoneNumber,
-            specificAddress,
-            ward,
-            district,
-            city,
-            fullName,
-        })
-            .then((res) => {
-                if (res.data.message === 'success') {
-                    if (!stateAddress) setStateAddress(true);
-                    if (checkPushAddress) {
-                        setCheckPushAddress(false);
-                    }
-                }
-            })
-            .catch((err) => {
-                if (err.response.status === 401) navigate('/login');
+        try {
+            await request.post(`/Site/update-address`, {
+                phone: phoneNumber,
+                specificAddress,
+                ward,
+                district,
+                city,
+                fullName,
             });
+            if (!stateAddress) setStateAddress(true);
+            if (checkPushAddress) setCheckPushAddress(false);
+        } catch (error) {  }
     };
 
     const handleBtnGoBack = () => {
         if (stateAddress === false) navigate('/cart');
-        else {
-            setCheckPushAddress(false);
-        }
+        else { setCheckPushAddress(false); }
     };
 
     return (
         <div className={cx('container')}>
             <div className={cx('mt-4', 'mb-4')}>
                 <div className={cx('title-page')}>
-                    <h3>Payment</h3>
+                    <h3>Thanh toán</h3>
                 </div>
 
                 <div className={cx('shipping-address-wrap')}>
                     <h4 className={cx('shipping-address-title')}>
-                        <img alt="" style={{ marginRight: '10px', width: '20px' }} src={images.iconLocation} /> Shipping address
+                        <img alt="" style={{ marginRight: '10px', width: '20px' }} src={images.iconLocation} /> Địa chỉ nhận hàng:
                     </h4>
                     <div className={cx('shipping-address')}>
                         {infoUser && (
@@ -183,7 +139,7 @@ function CheckOut() {
                                     style={{ paddingLeft: '40px', backgroundColor: 'transparent' }}
                                     onClick={() => setCheckPushAddress(true)}
                                 >
-                                    Edit
+                                    Chỉnh sửa
                                 </button>
                             </>
                         )}
@@ -193,15 +149,15 @@ function CheckOut() {
                 <table className={cx('table', 'mt-4')}>
                     <thead>
                         <tr>
-                            <th scope="col">Product</th>
+                            <th scope="col">Sản phẩm</th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Unit price
+                                Giá ban đầu
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Quantity
+                                Số lượng
                             </th>
                             <th scope="col" style={{ textAlign: 'center' }}>
-                                Total
+                                Tổng tiền
                             </th>
                         </tr>
                     </thead>
@@ -245,7 +201,7 @@ function CheckOut() {
 
                 <div className={cx('payment-area')}>
                     <div className={cx('payment-method')}>
-                        <p className={cx('payment-method-title')}>Payment method</p>
+                        <p className={cx('payment-method-title')}>Phương thức thanh toán</p>
                         <div value={payment}>
                             <div className={cx('later_money')}>
                                 <input
@@ -256,7 +212,7 @@ function CheckOut() {
                                     onChange={handleRadio}
                                     checked={payment === 'Thanh toán khi nhận hàng'}
                                 />
-                                <label htmlFor="later_money">Cash on delivery</label>
+                                <label htmlFor="later_money">Thanh toán khi nhận hàng</label>
                             </div>
                             <div className={cx('paypal')}>
                                 <input
@@ -266,13 +222,13 @@ function CheckOut() {
                                     value="Thanh toán bằng Paypal"
                                     onChange={handleRadio}
                                 />
-                                <label htmlFor="paypal">Pay with Paypal</label>
+                                <label htmlFor="paypal">Thanh toán bằng Paypal</label>
                             </div>
                         </div>
                     </div>
                     <div className={cx('bill-product')}>
                         <div className={cx('total-payment')}>
-                            Total payment: <span className={cx('price-total-order')}>{priceTotal}$</span>
+                            Tổng thanh toán: <span className={cx('price-total-order')}>{priceTotal}$</span>
                         </div>
                         <div className={cx('buy-button')}>
                             {payment === 'Thanh toán khi nhận hàng' ? (
@@ -281,7 +237,7 @@ function CheckOut() {
                                     onClick={handleBuyLaterMoney}
                                     style={{ marginRight: '12px' }}
                                 >
-                                    Order now
+                                    Đặt hàng 
                                 </button>
                             ) : (
                                 <button
@@ -289,7 +245,7 @@ function CheckOut() {
                                     style={{ marginRight: '12px' }}
                                     disabled={payment === 'Thanh toán bằng Paypal'}
                                 >
-                                    Order now
+                                    Đặt hàng 
                                 </button>
                             )}
                         </div>
@@ -304,10 +260,17 @@ function CheckOut() {
                         <div className={cx('auth-form')}>
                             <div className={cx('auth-form__container')}>
                                 <div className={cx('auth-form__header')}>
-                                    <h3 className={cx('auth-form__heading')}>Create new address</h3>
-                                    <p className={cx('auth-form__switch-btn')}>
-                                        To order, please add a shipping address.
-                                    </p>
+                                    {(checkPushAddress === true) && (<>
+                                        <h3 className={cx('auth-form__heading')}>Chỉnh sửa địa chỉ</h3>
+                                        <p className={cx('auth-form__switch-btn')}>Để nhận hàng, hãy cập nhật địa chỉ của bạn.</p>
+                                    </>)}
+                                    {(stateAddress === false) && (<>
+                                        <h3 className={cx('auth-form__heading')}>Tạo mới địa chỉ</h3>
+                                        <p className={cx('auth-form__switch-btn')}>
+                                            Để nhận hàng, hãy thêm địa chỉ của bạn.
+                                        </p>
+                                    </>)}
+                                    
                                 </div>
                                 <div className={cx('auth-form__form')}>
                                     <div className={cx('auth-form__group')}>

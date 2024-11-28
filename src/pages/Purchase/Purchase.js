@@ -1,6 +1,4 @@
 import React from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import className from 'classnames/bind';
@@ -33,10 +31,9 @@ function Purchase() {
         const fetchApi = async () => {
             try {
                 const res = await request.get(`/Account/purchase?type=${type}`);
+                console.log(res)
                 setOrderDetails(res.result);
-            } catch (error) {
-                if (error.response.status === 401) navigate('/login');
-            }
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
         };
 
         fetchApi();
@@ -61,12 +58,6 @@ function Purchase() {
                         }}
                         data-target={id}
                     >
-                        Hủy đơn hàng
-                    </button>
-                );
-            case 'delivering':
-                return (
-                    <button className={cx('btn')} style={{ border: '1px solid #e8e8e8' }}>
                         Hủy đơn hàng
                     </button>
                 );

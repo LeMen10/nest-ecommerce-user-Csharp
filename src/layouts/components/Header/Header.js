@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import { CartIcon, HeartIcon, UserIcon } from '~/components/Icons';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import * as request from '~/utils/request';
+// import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -78,23 +78,23 @@ function Header({ variable }) {
                             <ul className={cx('nav-list')}>
                                 <li className={cx('nav-item')}>
                                     <Link className={cx('nav-link', 'nav-link-pc')} to={'/'}>
-                                        Home
+                                        Trang chủ
                                     </Link>
                                 </li>
                                 <li className={cx('nav-item')}>
                                     <Link className={cx('nav-link', 'nav-link-pc')} to={'/shop'}>
-                                        Shop
+                                        Cửa hàng
                                     </Link>
                                 </li>
                                 <li className={cx('nav-item')}>
                                     <Link className={cx('nav-link', 'nav-link-pc')} to={'/about'}>
-                                        About
+                                        Giới thiệu
                                     </Link>
                                 </li>
 
                                 <li className={cx('nav-item')}>
                                     <Link className={cx('nav-link', 'nav-link-pc')} to={'/contact'}>
-                                        Contact
+                                        Liên hệ
                                     </Link>
                                 </li>
                             </ul>
@@ -120,7 +120,7 @@ function Header({ variable }) {
                                                 className={cx('logged-dropdown-item-content')}
                                             >
                                                 <i className={cx('fa-solid', 'fa-cart-shopping')}></i>
-                                                <p>Purchase order</p>
+                                                <p>Đơn hàng</p>
                                             </Link>
                                         </li>
                                         <li className={cx('logged-dropdown-item')}>
@@ -128,7 +128,7 @@ function Header({ variable }) {
                                                 <i
                                                     className={cx('fa-solid', 'fa-right-from-bracket', 'icon-logout')}
                                                 ></i>
-                                                <p className={cx('js-log-out')}>Log out</p>
+                                                <p className={cx('js-log-out')}>Đăng xuất</p>
                                             </div>
                                         </li>
                                     </ul>
