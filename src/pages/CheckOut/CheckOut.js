@@ -38,7 +38,6 @@ function CheckOut() {
                 setProducts(rs);
                 setPriceTotal(total);
             } catch (error) { 
-                console.log(error)
                 if (error.response.status === 401) navigate('/login'); 
                 if (error.response.status === 404) navigate('/cart');
             }
@@ -62,7 +61,7 @@ function CheckOut() {
                     setWard(data.ward);
                     setSpecificAddress(data.specificAddress);
                 }
-            } catch (error) {  }
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
         })();
     }, [stateAddress, checkPushAddress, navigate]);
 
@@ -84,7 +83,7 @@ function CheckOut() {
                 orderDetails: shortList
             });
             if (res.message === "success") navigate('/user/purchase?type=noted');
-        } catch (error) {  }
+        } catch (error) { if (error.response.status === 401) navigate('/login'); }
     };
 
     const handleRadio = (event) => {
@@ -92,7 +91,6 @@ function CheckOut() {
     };
 
     const updateAddress = async () => {
-
         try {
             await request.post(`/Site/update-address`, {
                 phone: phoneNumber,
@@ -104,7 +102,7 @@ function CheckOut() {
             });
             if (!stateAddress) setStateAddress(true);
             if (checkPushAddress) setCheckPushAddress(false);
-        } catch (error) {  }
+        } catch (error) { if (error.response.status === 401) navigate('/login'); }
     };
 
     const handleBtnGoBack = () => {

@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios';
 import images from '~/assets/images/images';
 import Search from '~/layouts/components/Search/Search';
 import className from 'classnames/bind';
@@ -8,7 +7,7 @@ import Cookies from 'js-cookie';
 import { CartIcon, HeartIcon, UserIcon } from '~/components/Icons';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// import * as request from '~/utils/request';
+import * as request from '~/utils/request';
 
 const cx = className.bind(styles);
 
@@ -27,43 +26,32 @@ function Header({ variable }) {
     }, []);
 
     useEffect(() => {
-        const token = Cookies.get('token');
-        const api = axios.create({
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        api.get(`${process.env.REACT_APP_BASE_URL}/Account/get-username`)
-            .then((res) => {
-                setUsername(res.data.username);
-                console.log(res)
-            })
-            .catch((error) => {});
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Account/get-username`);
+                setUsername(res.username);
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
+        };
+        fetchApi();
     }, [navigate]);
 
     useEffect(() => {
         const token = Cookies.get('token');
-        if (token) {
-            const api = axios.create({
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            api.get(`${process.env.REACT_APP_BASE_URL}/Account/get-items-cart`)
-                .then((res) => {
-                    setCountItemsCart(res.data.result);
-                })
-                .catch((error) => {});
-        }
-    }, [variable]);
+        if (!token) navigate('/login');
+        const fetchApi = async () => {
+            try {
+                const res = await request.get(`/Account/get-items-cart`);
+                setCountItemsCart(res.result);
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
+        };
+        fetchApi();
+    }, [variable, navigate]);
 
     const handleLogout = () => {
         Cookies.remove('token');
         setUsername(undefined);
+        setCountItemsCart(0);
+        navigate('/login')
     };
     return (
         <div className={cx('header', `${boxShadowHeader}`)}>

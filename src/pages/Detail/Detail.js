@@ -114,7 +114,7 @@ function Detail({ setHeaderVariable }) {
                                 <div className={cx('btn-submit')}>
                                     <button onClick={handleSubmit} className={cx('btn')}>
                                         <i className={cx('fa-solid', 'fa-cart-shopping', 'icon-cart-mr-8')}></i>
-                                        Add to cart
+                                        Thêm vào giỏ hàng
                                     </button>
                                 </div>
                             </div>
@@ -123,7 +123,7 @@ function Detail({ setHeaderVariable }) {
                         <div className={cx('description-long-wrap', 'm-auto')}>
                             <div className={cx('description-long')}>
                                 <Link to={''} className={cx('description-categori')}>
-                                    Description
+                                    Chi tiết
                                 </Link>
                                 <div className={cx('description-text')}>
                                     <p>

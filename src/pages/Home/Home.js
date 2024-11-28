@@ -6,10 +6,13 @@ import ProductItem from '~/layouts/components/ProductItem/ProductItem';
 import images from '~/assets/images/images';
 import TypicalComponent from '~/layouts/components/TypicalComponent/TypicalComponent';
 import * as request from '~/utils/request';
+import { useNavigate } from 'react-router-dom';
+
 
 const cx = className.bind(styles);
 
 function Home() {
+    const navigate = useNavigate();
     const [productList, setProductList] = useState([]);
     const postsPerPage = 10;
 
@@ -18,11 +21,11 @@ function Home() {
             try {
                 const res = await request.get(`/Product/get-products?page=1&limit=${postsPerPage}`);
                 setProductList(res.products);
-            } catch (error) {}
+            } catch (error) { if (error.response.status === 401) navigate('/login'); }
         };
 
         fetchApi();
-    }, []);
+    }, [navigate]);
 
     const topSelling = [
         { img: images.thumbnail1, title: 'Nestle Original Coffee-Mate Coffee Creamer', price: 32 },
